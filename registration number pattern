@@ -1,0 +1,16 @@
+
+function valid_registrationnumber(regnumber){
+    str = regnumber;
+    // var pattern = /[A-Z]{3}\/[0-9]{1,6}\/\d{4}$/i;
+    var pattern = /[A-Za-z]{3}\/[0-9]{1,6}\/\d{4}$/i;
+    var result = str.match(pattern);
+    return result;
+}
+
+    is_Valid_Reg = valid_registrationnumber(advBarRegNo);
+    // alert(is_Valid_Reg);
+
+    if(is_Valid_Reg == null) {
+      swal("Please Enter Register Number In The Format KAR/XXXXXX/2020");
+      return false;
+    }

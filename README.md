@@ -1,2 +1,0 @@
-# vsat
-daily learing task
