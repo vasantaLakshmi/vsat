@@ -1,0 +1,14 @@
+function valid_pincode(advRegPin){
+    var str = advRegPin;
+    var pattern = "^[5][0-9]{5}$";
+    var result = str.match(pattern);
+  // alert('result');
+  return result;
+}
+
+ is_valid_pin = valid_pincode(advRegPin);
+  if(is_valid_pin == null || advRegPin.length < 6 || advRegPin.length > 6 ){
+
+    swal("Please Enter Pincode Starting Number is 5 Up to 5 Digits.", "", "error");
+    return false;
+     }
