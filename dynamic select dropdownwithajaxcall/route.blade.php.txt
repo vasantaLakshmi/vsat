@@ -1,0 +1,4 @@
+Route::get('/advocateapproval', 'ApprovalofadvocateController@advocateapproval');
+Route::post('approval', ['uses' => 'ApprovalofadvocateController@approval',  'as' => 'approval' ]);
+Route::post('/approvallist', ['uses' => 'AdvController@approvallist',  'as' => 'approvallist']);
+Route::post('/updateprofile', 'ApprovalofadvocateController@updateprofile');

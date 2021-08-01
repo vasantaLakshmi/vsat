@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+use App\IANature;
+
+use App\Advocate;
+
+use DB;
+
+use App\Http\Requests;
+
+class ApprovalofadvocateController extends Controller
+{
+  public function __construct()
+
+{
+ $this->IANature = new IANature();
+ $this->Advocate = new Advocate();
+}
+
+public function advocateapproval(Request $request){
+    return view('Admin.advocateapproval');
+ }
+
+  public  function cancelcourtdirection(){
+      return view('casefollowup.cancelcourtdirection');
+  }
+
+  public function approvallist(Request $request){
+    $statusofadvocatechange = $request->statusofadvocatechange;
+
+
+   if($statusofadvocatechange == 1) {
+
+       $usersonline=DB::SELECT("Select u1.id as id, u1.mobile,u1.name,
+       u1.advocatename,u1.advocateaddress,
+         u1.advocateregno,u1.pincode, D.distname, t.talukname from users_online u1
+           Join district D on D.distcode=u1.distcode
+         Join taluk T on T.talukcode=u1.talukcode where isverified ='N' and newadvocate='Y'");
+
+   } elseif($statusofadvocatechange == 2) {
+
+         $usersonline =DB::SELECT("SELECT u1.id as id,u1.name, u1.mobile,
+              u1.email,u1.advocateregno, u1.advocatename,u1.advocateaddress,u1.pincode,
+              a1.advocatename as aadvocatename,a1.advocateaddress as aadvocateaddress,
+              a1.pincode as apincode,
+              D.distname, t.talukname
+           FROM users_online u1
+          INNER JOIN advocate a1
+         Join district D on D.distcode=a1.distcode
+        Join taluk T on T.talukcode=a1.talukcode
+           ON u1.advocateregno = a1.advocateregno where newadvocate = 'N' and isverified = 'N'");
+     } else{
+
+        $usersonline=DB::SELECT("Select u1.id as id, u1.mobile,u1.name,
+         u1.advocatename,u1.advocateaddress,
+      u1.advocateregno,u1.pincode, D.distname, t.talukname from users_online u1
+         Join district D on D.distcode=u1.distcode
+    Join taluk T on T.talukcode=D.distcode where isverified ='Y'");
+  }
+
+return view('Admin.approvallist', ['usersonline' => $usersonline],['statusofadvocatechange' =>$statusofadvocatechange] );
+ }
+
+
+public function updateprofile(Request $request) {
+  $statusofadvocatechange = $request->statusofadvocatechange;
+  $ids = $request->ids;
+
+  if($statusofadvocatechange == 1) {
+    if($ids==null) {
+      return response()->json([
+          'status' => "error",
+          'message' => "Please check checkbox to publish court directions"
+        ]);
+    }
+
+    try{
+        for($i=0;$i<count($ids);$i++) {
+
+          DB::SELECT("UPDATE users_online set isverified='Y',newadvocate='N' where id='$ids[$i]'");
+          DB::INSERT("INSERT INTO advocate(advocateregno,advocatename, advocateaddress,distcode,talukcode, pincode)
+              SELECT advocateregno,advocatename, advocateaddress,distcode,talukcode,pincode FROM users_online
+              where id='$ids[$i]'");
+
+          DB::commit();
+       }
+       return response()->json([
+         'status' => "sucess",
+         'message' => "Updated Successfully"
+       ]);
+
+   } catch (\Throwable $e) {
+       DB::rollback();
+       throw $e;
+       return response()->json([
+           'status' => "error",
+           'message' => "Enter remarks for selected values"
+        ]);
+   }
+  }
+
+  if($statusofadvocatechange == 2) {
+    if($ids==null) {
+      return response()->json([
+          'status' => "error",
+          'message' => "Please check checkbox to publish court directions"
+        ]);
+    }
+
+    try{
+        for($i=0;$i<count($ids);$i++) {
+
+          DB::SELECT("UPDATE users_online set isverified='Y' where id='$ids[$i]'");
+          DB::INSERT("UPDATE advocate SET advocatename=t.advocatename,advocateaddress =t.advocateaddress,
+                      distcode=t.distcode,talukcode=t.talukcode,pincode=t.pincode FROM (SELECT advocateregno, advocatename, advocateaddress , distcode,talukcode,pincode
+                        from users_online where id='$ids[$i]') t");
+          DB::commit();
+       }
+       return response()->json([
+         'status' => "sucess",
+         'message' => "Updated Successfully"
+       ]);
+
+   } catch (\Throwable $e) {
+       DB::rollback();
+       throw $e;
+       return response()->json([
+           'status' => "error",
+           'message' => "Enter remarks for selected values"
+        ]);
+   }
+  }
+
+
+}
+}

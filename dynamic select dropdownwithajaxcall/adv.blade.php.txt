@@ -1,0 +1,189 @@
+@extends('layout.mainlayout')
+@section('content')
+
+<style type="text/css">
+  .pager{
+  background-color: #337ab7;
+  color: #fff;
+  }
+  .do-scroll{
+  width: 100%;
+  height: 100px;
+  overflow-y: scroll;
+  }
+  .btnSearch,
+  .btnClear{
+  display: inline-block;
+  vertical-align: top;
+  }
+</style>
+<div class="content-wrapper">
+<script type="text/javascript" src="js/jquery.min.js"></script>
+   <div align="center">
+     <section class="content" style="width: 100%">
+       <div class="panel  panel-primary">
+         <form name="form1" id="form1" action="{{ route('approvallist') }}" method="post">
+           <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
+           {{ csrf_field() }}
+           <div class="col-md-10">
+             <table class="table no-margin table-bordered">
+               <tr>
+                  <td  class="bg-primary text-center" colspan="4"> <h4>Approval of Advocate Changes </h4> </td>
+                </tr>
+                <tr>
+                  <td> <span class="mandatory">*</span>  <label>Status of Advocate Change:</label></td>
+                  <td>
+                    <div class="form-group">
+                        <select class="form-control" name="statusofadvocatechange" id="statusofadvocatechange"  data-parsley-required data-parsley-required-message="Select Status of Advocate" >
+                          <option value="">Select </option>
+                          <option value="1">Pending - New Advocate</option>
+                          <option value="2">Pending - Change in mobile/address</option>
+                          <option value="3">Approved</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td colspan="4">
+                      <div class="text-center">
+                        <input type="button" accesskey="s" class="btn btn-primary" value="Update" id="update" width="100px" >
+                        <a class="btn btn-warning" href=""> Cancel </a>
+                      </div>
+                    </td>
+                  </tr>
+                </form>
+
+<!-- advocateapproval -->
+<form role="form" id="ordergenerationform" name="ordergenerationform" method="GET" action="{{ route('approvallist',[],false) }}" data-parsley-validate>
+<div class="panel  panel-primary">
+  <table class="table table-bordered table2 display" data-page-length='25' id="myTable" width="100%">
+    <thead>
+        <tr>
+          <td  class="bg-primary text-center" colspan="15"><h4> Court Proceedings entered for Hearing date</h4> </td>
+        </tr>
+        <tr>
+            <td class="checkboxhiding"><input type="checkbox" id="chkCheckAll" /></td>
+            <td>Name</td>
+            <td>Mobile</td>
+            <td>Advocate Reg No</td>
+            <td>Advocate Name</td>
+            <td>Advocate Address</td>
+            <td>District Name</td>
+            <td>Taluk Name</td>
+            <td>Pincode</td>
+            <td class="hiding">A-Advocate Name</td>
+            <td class="hiding">A-Advocate Address</td>
+            <td class="hiding">A-District Name</td>
+            <td class="hiding">A-Taluk Name</td>
+            <td class="hiding">A-Pincode</td>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+</div>
+</form>
+</div>
+
+</div>
+
+ </div>
+
+</div>
+</section>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $('.hiding').hide();
+
+
+  $("#statusofadvocatechange").change(function(){
+      var statusofadvocatechange =  $("#statusofadvocatechange").val();
+      if(statusofadvocatechange == "") {
+          $("#myTable tbody").empty();
+      } else {
+
+
+      if(statusofadvocatechange == 2) {
+          $('.hiding').show();
+      } else {
+          $('.hiding').hide();
+      }
+
+      if(statusofadvocatechange == 3) {
+          $('.checkboxhiding').hide();
+      } else {
+          $('.checkboxhiding').show();
+      }
+
+      $.ajax({
+        type: "POST",
+        url: "approvallist",
+        data: {
+          "_token": $('#token').val(),
+          statusofadvocatechange: statusofadvocatechange
+          },
+       cache: false,
+      success: function(data) {
+        console.log(data); // I get error and success function does not execute
+        $("#myTable tbody").empty();
+        $("#myTable tbody").append(data);
+      }
+});
+}
+});
+
+});
+</script>
+<script>
+    $(function(e) {
+        $("#chkCheckAll").click(function() {
+            $(".checkBoxClass").prop('checked', $(this).prop('checked'))
+        });
+      });
+
+      $('#update').click(function(e) {
+          var ids = new Array();
+          var statusofadvocatechange =  $("#statusofadvocatechange").val();
+          $.each($("input[name='ids[]']:checked"), function() {
+            ids.push($(this).val());
+          });
+
+      alert(ids);
+      e.preventDefault();
+       $.ajax({
+              type     : "POST",
+              cache    : false,
+              url      : "updateprofile",
+              data: {"_token": $('#token').val(),ids : ids,statusofadvocatechange:statusofadvocatechange },
+              success  : function(data) {
+                console.log(data);
+                if(data.status=="sucess") {
+                    location.reload();
+                    swal({
+                    title: data.message,
+                    icon: "success"
+                  });
+                }
+
+                if(data.status=="error"){
+                  swal({
+                    title: data.message,
+                    icon: "error"
+                  });
+                }
+                if(data.status=="update"){
+                  swal({
+                    title: data.message,
+                    icon: "success"
+                  });
+                }
+              }
+         });
+
+      });
+</script>
+
+  @endsection
